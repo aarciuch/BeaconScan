@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+    </data>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scrollbars="horizontal"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            tools:context=".MainActivity"
+            android:background="#62C9E8">
+
+            <TextView
+                android:id="@+id/perm"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="ZEZWOLENIA"
+                android:background="#FFFFFF"/>
+
+            <TextView
+                android:id="@+id/log"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="LOG"
+                android:background="#000000"/>
+
+        </LinearLayout>
+    </ScrollView>
+</layout>
