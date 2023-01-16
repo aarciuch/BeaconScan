@@ -25,7 +25,55 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="ZEZWOLENIA"
-                android:background="#FFFFFF"/>
+                android:background="#FFFFFF00"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="LOG1"
+                android:background="#00FF00"/>
+
+            <TextView
+                android:id="@+id/log1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:background="#00FF00"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="LOG2:"
+                android:background="#00FFF0"/>
+
+            <TextView
+                android:id="@+id/log2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:background="#00FFF0"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="LOG3:"
+                android:background="#00FFFF"/>
+            <TextView
+                android:id="@+id/log3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:background="#00FFFF"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="LOG4:"
+                android:background="#0FFFFF"/>
+            <TextView
+                android:id="@+id/log4"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:background="#0FFFFF"/>
 
             <TextView
                 android:id="@+id/log"

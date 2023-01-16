@@ -14,6 +14,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -37,6 +38,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var bluetoothAdapter: BluetoothAdapter
     private lateinit var bluetoothLeScanner: BluetoothLeScanner
     private val hander = Handler(Looper.getMainLooper())
+    private var czyszcenie = 0
 
 //    private val requestBluetoothLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
 //            it ->
@@ -65,7 +67,8 @@ class MainActivity : AppCompatActivity() {
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
         init()
         if (bleInit()) {
-            bleScan(1000L)
+            bleScan(10000L)
+            bleScan1()
         } else {
             binding.perm.text = String.format("%s %s",binding.perm.text, "\n WŁĄCZ BLUETOOTH!!!")
         }
@@ -224,8 +227,7 @@ class MainActivity : AppCompatActivity() {
     private fun bleScan(period: Long) {
         bluetoothLeScanner = bluetoothAdapter.bluetoothLeScanner
         var scanning = false
-     //   for (i in 0..9 step 1) {
-            if (!scanning) {
+        if (!scanning) {
                 hander.postDelayed({
                     scanning = false
                     if (ActivityCompat.checkSelfPermission(
@@ -244,30 +246,25 @@ class MainActivity : AppCompatActivity() {
                     }
                 //   bluetoothLeScanner.stopScan(leScanCallback)
                 }, period)
-                scanning = true
+                scanning = false
                 bluetoothLeScanner.startScan(leScanCallback)
             } else {
                 scanning = false
                 bluetoothLeScanner.stopScan(leScanCallback)
             }
-   //     }
-       /* if (ActivityCompat.checkSelfPermission(
-                this,
+    }
+
+    private fun bleScan1() {
+        bluetoothLeScanner = bluetoothAdapter.bluetoothLeScanner
+        if (ActivityCompat.checkSelfPermission(
+               applicationContext,
                 Manifest.permission.BLUETOOTH_SCAN
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            //return
-        }
-        bluetoothLeScanner.startScan(leScanCallback)*/
-    }
 
+        }
+        bluetoothLeScanner.startScan(leScanCallback)
+    }
     private val leScanCallback : ScanCallback = object : ScanCallback() {
         override fun onScanResult(callbackType: Int, result: ScanResult?) {
             super.onScanResult(callbackType, result)
@@ -290,6 +287,14 @@ class MainActivity : AppCompatActivity() {
                 result?.device?.address == "D0:F0:18:78:03:13" ||
                 result?.device?.address == "D0:F0:18:78:03:2A"  )
             binding.log.text = String.format("%s %s ",binding.log.text, "\n ${result.device?.address}  ${result.rssi}  ${result.device.name}  ${result.device.alias}")
+            if (result?.device?.address == "D0:F0:18:78:03:12")
+                binding.log1.text = String.format("%s ","${result.device?.address}  ${result.rssi}  ${result.device.name}  ${result.device.alias}")
+            if (result?.device?.address == "D0:F0:18:78:03:29")
+                binding.log2.text = String.format("%s ","${result.device?.address}  ${result.rssi}  ${result.device.name}  ${result.device.alias}")
+            if (result?.device?.address == "D0:F0:18:78:03:13")
+                binding.log3.text = String.format("%s ","${result.device?.address}  ${result.rssi}  ${result.device.name}  ${result.device.alias}")
+            if (  result?.device?.address == "D0:F0:18:78:03:2A" )
+                binding.log4.text = String.format("%s ","${result.device?.address}  ${result.rssi}  ${result.device.name}  ${result.device.alias}")
             //binding.log.text = String.format("%s ","\n ${result?.device?.address}  ${result?.rssi}  ${result?.device?.name}  ${result?.device?.alias}")
         }
     }
