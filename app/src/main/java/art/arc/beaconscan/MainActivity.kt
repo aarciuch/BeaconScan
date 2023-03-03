@@ -9,6 +9,7 @@ import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.icu.util.LocaleData
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -16,12 +17,23 @@ import android.os.Looper
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RestrictTo.Scope
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import art.arc.beaconscan.databinding.ActivityMainBinding
-
+import kotlinx.coroutines.*
+import java.lang.Exception
+import java.net.DatagramPacket
+import java.net.DatagramSocket
+import java.net.InetAddress
+import java.nio.charset.Charset
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeFormatterBuilder
+import java.util.Date
 
 
 class MainActivity : AppCompatActivity() {
@@ -39,6 +51,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var bluetoothLeScanner: BluetoothLeScanner
     private val hander = Handler(Looper.getMainLooper())
     private var czyszcenie = 0
+    private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss:SSS")
 
 //    private val requestBluetoothLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
 //            it ->
@@ -66,12 +79,44 @@ class MainActivity : AppCompatActivity() {
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
         init()
+
+        binding.startReceiveUDP.setOnClickListener {
+            /*object: Thread() {
+                override fun run() {
+                    while (true) {
+                        val s = String(receiveUDP(), Charsets.UTF_8)
+                    }
+                }
+            }.start()*/
+            GlobalScope.launch(Dispatchers.IO) {
+                while (true) {
+                    val s = String(receiveUDP(), Charsets.UTF_8)
+                    Log.i("UDP", s)
+                    withContext(Dispatchers.Main) {
+                        binding.recevedMsg.setText(s)
+                    }
+
+                }
+            }
+        }
+
+        binding.sendUDP.setOnClickListener {
+            val ip = binding.ipAddress.text.toString()
+            val port = binding.ipPort.text.toString().toInt()
+            val msg = binding.textToSend.text.toString() + '\n'
+            sendViaUDP(ip, port,msg)
+            Log.i("UDP", "Sending ...$ip, $port, $msg")
+        }
+
+
         if (bleInit()) {
             bleScan(10000L)
             bleScan1()
         } else {
             binding.perm.text = String.format("%s %s",binding.perm.text, "\n WŁĄCZ BLUETOOTH!!!")
         }
+
+
     }
 
     /****************************** UPRAWNIENIA START ******************************************/
@@ -282,20 +327,83 @@ class MainActivity : AppCompatActivity() {
                 // for ActivityCompat#requestPermissions for more details.
                // return
             }
-            if (result?.device?.address == "D0:F0:18:78:03:12" ||
-                result?.device?.address == "D0:F0:18:78:03:29" ||
-                result?.device?.address == "D0:F0:18:78:03:13" ||
-                result?.device?.address == "D0:F0:18:78:03:2A"  )
-            binding.log.text = String.format("%s %s ",binding.log.text, "\n ${result.device?.address}  ${result.rssi}  ${result.device.name}  ${result.device.alias}")
+            czyszcenie ++
+            if (czyszcenie == 100) {
+                binding.log.text = ""
+                czyszcenie = 0
+            }
+            if (binding.wszystkie.isChecked) {
+                binding.log.text = String.format( "%s %s ",binding.log.text,"\n ${result?.device?.address}  ${result?.rssi}  ${result?.device?.name}  ${result?.device?.alias}")
+            }
             if (result?.device?.address == "D0:F0:18:78:03:12")
-                binding.log1.text = String.format("%s ","${result.device?.address}  ${result.rssi}  ${result.device.name}  ${result.device.alias}")
+                 binding.log1.text = String.format("%s ","${result.device?.address}  ${result.rssi}  ${result.device.name}  ${result.device.alias}  ${LocalDateTime.now().format(formatter)}")
             if (result?.device?.address == "D0:F0:18:78:03:29")
-                binding.log2.text = String.format("%s ","${result.device?.address}  ${result.rssi}  ${result.device.name}  ${result.device.alias}")
+                binding.log2.text = String.format("%s ","${result.device?.address}  ${result.rssi}  ${result.device.name}  ${result.device.alias}  ${LocalDateTime.now().format(formatter)}")
             if (result?.device?.address == "D0:F0:18:78:03:13")
-                binding.log3.text = String.format("%s ","${result.device?.address}  ${result.rssi}  ${result.device.name}  ${result.device.alias}")
+                binding.log3.text = String.format("%s ","${result.device?.address}  ${result.rssi}  ${result.device.name}  ${result.device.alias}  ${LocalDateTime.now().format(formatter)}")
             if (  result?.device?.address == "D0:F0:18:78:03:2A" )
-                binding.log4.text = String.format("%s ","${result.device?.address}  ${result.rssi}  ${result.device.name}  ${result.device.alias}")
-            //binding.log.text = String.format("%s ","\n ${result?.device?.address}  ${result?.rssi}  ${result?.device?.name}  ${result?.device?.alias}")
+                binding.log4.text = String.format("%s ","${result.device?.address}  ${result.rssi}  ${result.device.name}  ${result.device.alias}  ${LocalDateTime.now().format(formatter)}")
+
+                //binding.log.text = String.format("%s ","\n ${result?.device?.address}  ${result?.rssi}  ${result?.device?.name}  ${result?.device?.alias}")
         }
     }
+
+    private fun sendViaUDP(ip: String, port: Int, data: String) {
+        try {
+            val socket = DatagramSocket()
+            val socket_MATLAB = DatagramSocket()
+            socket.broadcast = true
+            val sendData = data.toByteArray(Charsets.UTF_8)
+            val sendPacket = DatagramPacket(sendData, sendData.size, InetAddress.getLoopbackAddress(), port)
+            val sendPacket_MATLAB = DatagramPacket(sendData, sendData.size, InetAddress.getByName(ip), port)
+            GlobalScope.launch {
+                Log.i("UDP", "${sendData.size}")
+                socket.send(sendPacket)
+                socket_MATLAB.send(sendPacket_MATLAB)
+            }
+
+        } catch (e: Exception) {
+            e.message?.let { Log.e("UDP", it) }
+        }
+    }
+
+    fun receiveUDP(): ByteArray {
+        var ret = ByteArray(24)
+        var socket: DatagramSocket? = null
+        try {
+            //Keep a socket open to listen to all the UDP trafic that is destined for this port
+            socket = DatagramSocket(8888)
+           // socket.broadcast = true
+            val Buffer = ByteArray(24)
+            val packet = DatagramPacket(Buffer, Buffer.size)
+            Log.i("UDP", "Receiving ...")
+            socket.receive(packet)
+            ret = packet.data
+            Log.i("UDP", "${packet.address} : ${String(packet.data, Charsets.UTF_8)}")
+        } catch (e: Exception) {
+            e.printStackTrace()
+        } finally {
+            socket?.close()
+        }
+        return ret
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
