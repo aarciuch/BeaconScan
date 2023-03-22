@@ -82,7 +82,7 @@ class LicznikKrokow : Service() {
                             delay(1000L)
                             for (i in 1..10) {
                                 var intent: Intent = Intent("LICZNIK_KROKOW")
-                                intent.putExtra("CZAS", i.toString())
+                                intent.putExtra("K", i.toString())
                                 LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(intent)
                                 delay(500L)
                             }

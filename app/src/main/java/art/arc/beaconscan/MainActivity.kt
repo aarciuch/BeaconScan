@@ -136,7 +136,9 @@ class MainActivity : AppCompatActivity() {
 
     inner class MessageReceiver : BroadcastReceiver() {
         override fun onReceive(p0: Context?, p1: Intent?) {
-           val s = p1?.getStringExtra("CZAS")
+           var s = p1?.getStringExtra("CZAS")
+           if ( s == null) s = p1?.getStringExtra("K")
+           //Toast.makeText(applicationContext, s.toString(), Toast.LENGTH_LONG).show()
            binding.stepCountStatus.text = s.toString()
         }
 
