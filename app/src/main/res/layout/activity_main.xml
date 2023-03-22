@@ -26,6 +26,49 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0"
+                    android:text="Number of step: "
+                    android:layout_margin="2dp"
+                    android:padding="2dp"
+                    android:textSize="20sp"
+                    android:background="#00FF00"
+                    android:textColor="#000000"
+                    android:textAlignment="viewEnd"/>
+
+                <TextView
+                    android:id="@+id/stepCountStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="0"
+                    android:layout_margin="2dp"
+                    android:padding="2dp"
+                    android:textSize="20sp"
+                    android:textColor="#000000"
+                    android:background="#FF0000"/>
+
+
+                <Button
+                    android:id="@+id/stepCountStartStop"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0"
+                    android:text="Start Stop"
+                    android:layout_margin="2dp"
+                    android:padding="2dp"
+                    android:textSize="16sp"
+                    android:background="#FF0000"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
                 <EditText
                     android:id="@+id/ipAddress"
                     android:layout_width="wrap_content"
@@ -36,7 +79,8 @@
                     android:background="#00FF00"
                     android:layout_margin="2dp"
                     android:padding="2dp"
-                    android:textColor="#000000"/>
+                    android:textColor="#000000"
+                    android:textSize="20sp"/>
 
                 <EditText
                     android:id="@+id/ipPort"
@@ -48,7 +92,8 @@
                     android:background="#FF0000"
                     android:layout_margin="2dp"
                     android:padding="2dp"
-                    android:textColor="#000000"/>
+                    android:textColor="#000000"
+                    android:textSize="20sp"/>
 
             </LinearLayout>
 

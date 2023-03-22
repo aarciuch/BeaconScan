@@ -7,13 +7,10 @@ import android.bluetooth.BluetoothManager
 import android.bluetooth.le.BluetoothLeScanner
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
-import android.content.Intent
+import android.content.*
 import android.content.pm.PackageManager
 import android.icu.util.LocaleData
-import android.os.Build
-import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
+import android.os.*
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -22,6 +19,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import art.arc.beaconscan.databinding.ActivityMainBinding
 import kotlinx.coroutines.*
 import java.lang.Exception
@@ -52,6 +50,8 @@ class MainActivity : AppCompatActivity() {
     private val hander = Handler(Looper.getMainLooper())
     private var czyszcenie = 0
     private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss:SSS")
+
+
 
 //    private val requestBluetoothLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
 //            it ->
@@ -116,8 +116,97 @@ class MainActivity : AppCompatActivity() {
             binding.perm.text = String.format("%s %s",binding.perm.text, "\n WŁĄCZ BLUETOOTH!!!")
         }
 
+        binding.stepCountStartStop.setOnClickListener {
+            //getRandomFroemLicznikKorokow()
+            sendMessage(MSG_SAY_HELLO)
+            sendMessage(MSG_GET_DATA)
+            sendMessage(MSG_COUNT)
+        }
+    }
+
+
+//**************** service Licznik kroków start ******************************//
+
+
+    //private lateinit var mLicznikKrokow: LicznikKrokow
+    private var mLicznikKrokowBound: Boolean = false
+    private var mLicznikKrokow2 : Messenger? = null
+    private var broadcastReceiver : MessageReceiver = MessageReceiver()
+
+
+    inner class MessageReceiver : BroadcastReceiver() {
+        override fun onReceive(p0: Context?, p1: Intent?) {
+           val s = p1?.getStringExtra("CZAS")
+           binding.stepCountStatus.text = s.toString()
+        }
 
     }
+
+    private val mConnection2LicznikKrokow = object : ServiceConnection {
+        override fun onServiceConnected(p0: ComponentName?, p1: IBinder?) {
+          //  val binder = p1 as LicznikKrokow.LicznikKrokowBinder
+           //mLicznikKrokow = binder.getService()
+            mLicznikKrokow2 = Messenger(p1)
+            mLicznikKrokowBound = true
+        }
+
+        override fun onServiceDisconnected(p0: ComponentName?) {
+            //mLicznikKrokowBound = false
+            mLicznikKrokow2 = null
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        Intent(this, LicznikKrokow::class.java).also {
+            bindService(it, mConnection2LicznikKrokow, Context.BIND_AUTO_CREATE)
+        }
+        LocalBroadcastManager.getInstance(applicationContext).registerReceiver(broadcastReceiver,
+            IntentFilter("LICZNIK_KROKOW"))
+    }
+
+    override fun onStop() {
+        super.onStop()
+        if (mLicznikKrokowBound) {
+            unbindService(mConnection2LicznikKrokow)
+            mLicznikKrokowBound = false
+        }
+        LocalBroadcastManager.getInstance(applicationContext).unregisterReceiver(broadcastReceiver)
+    }
+
+   /* private fun getRandomFroemLicznikKorokow() {
+        if (mLicznikKrokowBound) {
+            val num: Int = mLicznikKrokow.randomNumber
+            binding.stepCountStatus.text = num.toString()
+        }
+    }*/
+
+    fun sendMessage(a: Int) {
+        if (!mLicznikKrokowBound) return
+        var msg : Message? = null
+        when (a) {
+
+        MSG_SAY_HELLO ->
+                {
+                    msg = Message.obtain(null, MSG_SAY_HELLO, 0, 0)
+                }
+        MSG_GET_DATA ->
+            {
+                msg = Message.obtain(null, MSG_GET_DATA, 0, 0)
+            }
+        MSG_COUNT ->
+            {
+                 msg = Message.obtain(null, MSG_COUNT, 0, 0)
+            }
+        }
+        try {
+            mLicznikKrokow2?.send(msg)
+        } catch (e: RemoteException) {
+            e.printStackTrace()
+        }
+    }
+
+//**************** service Licznik kroków stop ******************************//
 
     /****************************** UPRAWNIENIA START ******************************************/
     private fun init() {
