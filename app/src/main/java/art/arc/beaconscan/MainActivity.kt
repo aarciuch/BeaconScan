@@ -27,6 +27,7 @@ import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.InetAddress
 import java.nio.charset.Charset
+import java.security.acl.Permission
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -136,10 +137,18 @@ class MainActivity : AppCompatActivity() {
 
     inner class MessageReceiver : BroadcastReceiver() {
         override fun onReceive(p0: Context?, p1: Intent?) {
-           var s = p1?.getStringExtra("CZAS")
-           if ( s == null) s = p1?.getStringExtra("K")
-           //Toast.makeText(applicationContext, s.toString(), Toast.LENGTH_LONG).show()
+           var s: String? = ""
+           if (p1?.extras?.containsKey("CZAS") == true) {
+               s = p1?.getStringExtra("CZAS").toString()
+           }
+           else if (p1?.extras?.containsKey("K") == true) {
+               s = p1?.getStringExtra("K").toString()
+           }
+           else if (p1?.extras?.containsKey("L") == true) {
+               s = p1?.getStringExtra("L").toString()
+           }
            binding.stepCountStatus.text = s.toString()
+           Log.i("SERVIVE", s.toString())
         }
 
     }
@@ -298,6 +307,12 @@ class MainActivity : AppCompatActivity() {
             Log.i("BLUETOOTH", "BLUETOOTH_SCAN AFTER REQUEST")
 
         }
+
+
+       requestPermissions(arrayOf(android.Manifest.permission.ACTIVITY_RECOGNITION),
+           8765)
+
+
     }
 
     override fun onRequestPermissionsResult(
@@ -331,6 +346,11 @@ class MainActivity : AppCompatActivity() {
             PERMISSION_REQUEST_BLUETOOTH_SCAN -> {
                 if (grantResults.isNotEmpty() && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
                     binding.perm.text = String.format("%s %s",binding.perm.text,"\n BLUETOOTH_SCAN AFTER REQUEST -> GRANTED")
+                }
+            }
+            8765 -> {
+                if (grantResults.isNotEmpty() && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                    binding.perm.text = String.format("%s %s",binding.perm.text,"\n ACITIVITY_RECOGNITION AFTER REQUEST -> GRANTED")
                 }
             }
             else -> {
